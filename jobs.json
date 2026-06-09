@@ -1,0 +1,88 @@
+[
+    {
+        "title": "Hoki - Skill & Time Exchange Platform",
+        "slug": "gMPUbLel-hoki-skill-and-time-exchange-platform",
+        "url": "https://contra.com/p/gMPUbLel-hoki-skill-and-time-exchange-platform",
+        "published": "2026-06-09",
+        "status": "published",
+        "roles": [
+            "Full-Stack Developer"
+        ],
+        "tools": [
+            "Drizzle ORM",
+            "Elysia",
+            "Next.js",
+            "Tailwind CSS",
+            "TypeScript"
+        ],
+        "externalLink": "https://hokiapp.it",
+        "coverImage": "https://media.contra.com/image/upload/w_1000/fs9ffxlatnpwn7mzew47.webp",
+        "inlineImages": [
+            "https://media.contra.com/image/upload/aucr6cjtgc5uzi6i4g3p.avif"
+        ]
+    },
+    {
+        "title": "Full-Stack Auth Template",
+        "slug": "BFoeRseU-full-stack-auth-template",
+        "url": "https://contra.com/p/BFoeRseU-full-stack-auth-template",
+        "published": "2026-06-09",
+        "status": "published",
+        "roles": [
+            "Full-Stack Developer"
+        ],
+        "tools": [
+            "Next.js",
+            "Tailwind CSS",
+            "TypeScript",
+            "Elysia",
+            "Drizzle ORM"
+        ],
+        "externalLink": "https://github.com/kliti72/auth-elysia-template",
+        "coverImage": "https://media.contra.com/image/upload/w_1000/dvkoejsemo57bjoij7ax.webp",
+        "inlineImages": []
+    },
+    {
+        "title": "Hytale Server Platform",
+        "slug": "MZeYklOP-hytale-server-platform",
+        "url": "https://contra.com/p/MZeYklOP-hytale-server-platform",
+        "published": "2026-06-09",
+        "status": "published",
+        "roles": [
+            "Full-Stack Developer"
+        ],
+        "tools": [
+            "Drizzle ORM",
+            "Elysia",
+            "Tailwind CSS",
+            "TypeScript",
+            "SolidJS"
+        ],
+        "externalLink": "https://github.com/kliti72/h-y-tale-server.top",
+        "coverImage": "https://media.contra.com/image/upload/w_1000/f1ntwddcf4ntj2zoe4eu.webp",
+        "inlineImages": [
+            "https://media.contra.com/image/upload/jvxmuwjcjokivbrcmifl.avif",
+            "https://media.contra.com/image/upload/bevocsyoaahxkfudmshw.avif"
+        ]
+    },
+    {
+        "title": "Elysia Developer Toolkit",
+        "slug": "FEQq7qsO-elysia-developer-toolkit",
+        "url": "https://contra.com/p/FEQq7qsO-elysia-developer-toolkit",
+        "published": "2026-06-09",
+        "status": "published",
+        "roles": [
+            "Backend Developer",
+            "Developer Tools Engineer"
+        ],
+        "tools": [
+            "Bun",
+            "Drizzle ORM",
+            "Elysia",
+            "SQLite",
+            "TypeScript"
+        ],
+        "externalLink": "https://github.com/kliti72/elysia-template",
+        "coverImage": "https://media.contra.com/image/upload/w_1000/royhnosnsizwv1gsjcnq.webp",
+        "inlineImages": []
+    }
+]

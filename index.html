@@ -740,10 +740,420 @@
 <!-- CTA -->
 <section class="cta-section" id="contact">
   <h2>Let's build<br>something<span>.</span></h2>
-  <a class="cta-email" href="mailto:elezikliti@gmail.com">elezikliti@gmail.com</a>
+  <a class="cta-email" href="mailto:hello@kliti.dev">hello@kliti.dev</a>
 </section>
 
-<!-- FOOTER  -->
+<!-- CV GAME -->
+<section style="border-top:1px solid #1A1A1A; padding: clamp(60px,8vw,120px) clamp(40px,8vw,120px);">
+  <div style="display:flex;align-items:baseline;gap:24px;margin-bottom:48px;">
+    <span style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.2em;color:#7C6EF8;text-transform:uppercase;flex-shrink:0;">Easter Egg</span>
+    <h2 style="font-size:clamp(36px,5vw,72px);font-weight:700;letter-spacing:-0.03em;line-height:1;">Play my CV</h2>
+  </div>
+  <p style="color:#888;font-size:15px;margin-bottom:24px;font-family:'Space Mono',monospace;">Space / Tap to jump &nbsp;·&nbsp; Collect skills &nbsp;·&nbsp; Don't fall</p>
+  <div style="position:relative;border:1px solid #222;overflow:hidden;border-radius:4px;">
+    <canvas id="cvGame" style="display:block;width:100%;background:#0A0A0A;cursor:pointer;"></canvas>
+    <div id="gameOverlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,10,0.85);gap:16px;">
+      <p style="font-family:'Space Mono',monospace;font-size:clamp(11px,2vw,14px);color:#7C6EF8;letter-spacing:0.2em;text-transform:uppercase;">Press Space or Tap to start</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:clamp(28px,6vw,56px);font-weight:700;color:#F0EEE9;letter-spacing:-0.03em;">Explore the CV</p>
+    </div>
+    <div id="scoreDisplay" style="position:absolute;top:16px;right:16px;font-family:'Space Mono',monospace;font-size:12px;color:#7C6EF8;letter-spacing:0.15em;display:none;">
+      <span id="scoreVal">0</span> pts
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const canvas = document.getElementById('cvGame');
+  const ctx = canvas.getContext('2d');
+  const overlay = document.getElementById('gameOverlay');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const scoreVal = document.getElementById('scoreVal');
+
+  const VIOLET = '#7C6EF8';
+  const OFFWHITE = '#F0EEE9';
+  const GRAY = '#333';
+  const GREEN = '#4ade80';
+  const DARK = '#0A0A0A';
+
+  const CV_ITEMS = [
+    { label: 'Next.js', color: OFFWHITE },
+    { label: 'TypeScript', color: '#3B82F6' },
+    { label: 'Elysia', color: VIOLET },
+    { label: 'Bun', color: '#F59E0B' },
+    { label: 'Drizzle ORM', color: '#10B981' },
+    { label: 'Tailwind', color: '#06B6D4' },
+    { label: 'Hoki App', color: VIOLET },
+    { label: 'Auth System', color: GREEN },
+    { label: 'CI/CD', color: '#F97316' },
+    { label: 'SolidJS', color: '#3B82F6' },
+    { label: 'nginx', color: OFFWHITE },
+    { label: 'SQLite', color: '#F59E0B' },
+    { label: 'VPS Deploy', color: GREEN },
+    { label: 'Hytale', color: VIOLET },
+    { label: 'Full-Stack', color: OFFWHITE },
+  ];
+
+  let W, H, GROUND, SCALE;
+  let state = 'idle';
+  let player, platforms, collectibles, particles;
+  let score, frame, speed, bgOffset;
+  let lastTime = 0;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width;
+    SCALE = Math.min(W / 800, 1);
+    H = Math.round(W * 0.38);
+    H = Math.max(H, 160);
+    canvas.width = W;
+    canvas.height = H;
+    GROUND = H - Math.round(40 * SCALE);
+  }
+
+  function initGame() {
+    score = 0;
+    frame = 0;
+    speed = 3.5;
+    bgOffset = 0;
+    scoreVal.textContent = '0';
+
+    const sz = Math.round(28 * SCALE);
+    player = {
+      x: Math.round(W * 0.15),
+      y: GROUND - sz,
+      w: sz, h: sz,
+      vy: 0,
+      onGround: false,
+      rotation: 0,
+      jumps: 0,
+    };
+
+    platforms = [
+      { x: 0, y: GROUND, w: W, h: Math.round(40*SCALE), type: 'ground' },
+      { x: W*0.55, y: GROUND - H*0.22, w: Math.round(110*SCALE), h: Math.round(14*SCALE), type: 'platform', label: 'Next.js', color: OFFWHITE },
+      { x: W*0.82, y: GROUND - H*0.35, w: Math.round(110*SCALE), h: Math.round(14*SCALE), type: 'platform', label: 'Elysia', color: VIOLET },
+      { x: W*1.15, y: GROUND - H*0.18, w: Math.round(120*SCALE), h: Math.round(14*SCALE), type: 'platform', label: 'Bun Runtime', color: '#F59E0B' },
+      { x: W*1.45, y: GROUND - H*0.3, w: Math.round(110*SCALE), h: Math.round(14*SCALE), type: 'platform', label: 'Drizzle ORM', color: '#10B981' },
+      { x: W*1.75, y: GROUND - H*0.42, w: Math.round(120*SCALE), h: Math.round(14*SCALE), type: 'platform', label: 'TypeScript', color: '#3B82F6' },
+    ];
+
+    collectibles = [];
+    spawnCollectibles();
+
+    particles = [];
+  }
+
+  function spawnCollectibles() {
+    CV_ITEMS.forEach((item, i) => {
+      collectibles.push({
+        x: W * 0.6 + i * Math.round(160 * SCALE),
+        y: GROUND - Math.round(H * (0.35 + (i % 3) * 0.12)),
+        r: Math.round(14 * SCALE),
+        label: item.label,
+        color: item.color,
+        collected: false,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    });
+  }
+
+  function spawnPlatform() {
+    const lastX = Math.max(...platforms.filter(p=>p.type==='platform').map(p=>p.x));
+    const gap = Math.round((120 + Math.random() * 160) * SCALE);
+    const pw = Math.round((90 + Math.random() * 60) * SCALE);
+    const py = GROUND - Math.round(H * (0.15 + Math.random() * 0.38));
+    const item = CV_ITEMS[Math.floor(Math.random() * CV_ITEMS.length)];
+    platforms.push({ x: lastX + gap, y: py, w: pw, h: Math.round(14*SCALE), type: 'platform', label: item.label, color: item.color });
+  }
+
+  function jump() {
+    const maxJumps = 2;
+    if (player.jumps < maxJumps) {
+      player.vy = -Math.round(H * 0.055) - speed * 0.3;
+      player.onGround = false;
+      player.jumps++;
+      spawnParticles(player.x + player.w/2, player.y + player.h, 6, VIOLET);
+    }
+  }
+
+  function spawnParticles(x, y, n, color) {
+    for (let i = 0; i < n; i++) {
+      particles.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 3,
+        vy: -Math.random() * 2 - 1,
+        life: 1,
+        color,
+        r: Math.round((2 + Math.random() * 3) * SCALE),
+      });
+    }
+  }
+
+  function update(dt) {
+    if (state !== 'playing') return;
+    frame++;
+    speed = Math.min(3.5 + frame * 0.0008, 8);
+    bgOffset = (bgOffset + speed * 0.3) % W;
+
+    const gravity = H * 0.0028;
+    player.vy += gravity;
+    player.y += player.vy;
+    player.onGround = false;
+
+    if (!player.onGround) player.rotation += speed * 0.06;
+
+    platforms.forEach(p => {
+      if (
+        player.x + player.w > p.x &&
+        player.x < p.x + p.w &&
+        player.y + player.h > p.y &&
+        player.y + player.h < p.y + p.h + 12 &&
+        player.vy >= 0
+      ) {
+        player.y = p.y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        player.jumps = 0;
+        player.rotation = Math.round(player.rotation / (Math.PI/2)) * (Math.PI/2);
+      }
+    });
+
+    platforms = platforms.filter(p => p.x + p.w > -200);
+    platforms.forEach(p => { if(p.type!=='ground') p.x -= speed; });
+
+    const lastPlatX = Math.max(...platforms.filter(p=>p.type==='platform').map(p=>p.x));
+    if (lastPlatX < W + 200) spawnPlatform();
+
+    collectibles.forEach(c => {
+      c.x -= speed;
+      c.pulse += 0.06;
+      if (!c.collected &&
+          player.x + player.w > c.x - c.r &&
+          player.x < c.x + c.r &&
+          player.y + player.h > c.y - c.r &&
+          player.y < c.y + c.r) {
+        c.collected = true;
+        score += 10;
+        scoreVal.textContent = score;
+        spawnParticles(c.x, c.y, 10, c.color);
+      }
+    });
+    collectibles = collectibles.filter(c => c.x > -50);
+
+    if (collectibles.filter(c=>!c.collected).length < 5) {
+      const item = CV_ITEMS[Math.floor(Math.random() * CV_ITEMS.length)];
+      const lastC = collectibles.length ? Math.max(...collectibles.map(c=>c.x)) : W;
+      collectibles.push({
+        x: lastC + Math.round((100 + Math.random()*120)*SCALE),
+        y: GROUND - Math.round(H*(0.25 + Math.random()*0.35)),
+        r: Math.round(14*SCALE),
+        label: item.label,
+        color: item.color,
+        collected: false,
+        pulse: Math.random()*Math.PI*2,
+      });
+    }
+
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.05;
+      p.life -= 0.03;
+    });
+    particles = particles.filter(p => p.life > 0);
+
+    if (player.y > H + 40) {
+      endGame();
+    }
+  }
+
+  function drawBackground() {
+    ctx.fillStyle = DARK;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = '#151515';
+    ctx.lineWidth = 1;
+    const gridSize = Math.round(40 * SCALE);
+    const off = bgOffset % gridSize;
+    for (let x = -off; x < W + gridSize; x += gridSize) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += gridSize) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.strokeStyle = VIOLET;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, GROUND); ctx.lineTo(W, GROUND); ctx.stroke();
+  }
+
+  function drawPlatforms() {
+    platforms.forEach(p => {
+      if (p.type === 'ground') return;
+      const grd = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+      grd.addColorStop(0, p.color + 'CC');
+      grd.addColorStop(1, p.color + '44');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.roundRect(p.x, p.y, p.w, p.h, 3);
+      ctx.fill();
+
+      ctx.font = `${Math.round(10*SCALE)}px 'Space Mono', monospace`;
+      ctx.fillStyle = p.color;
+      ctx.textAlign = 'center';
+      ctx.fillText(p.label, p.x + p.w/2, p.y - Math.round(6*SCALE));
+    });
+  }
+
+  function drawCollectibles() {
+    collectibles.forEach(c => {
+      if (c.collected) return;
+      const pulse = Math.sin(c.pulse) * Math.round(3*SCALE);
+      ctx.save();
+      ctx.translate(c.x, c.y);
+
+      ctx.shadowColor = c.color;
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = c.color + '33';
+      ctx.beginPath();
+      ctx.arc(0, 0, c.r + pulse + 4, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.arc(0, 0, c.r + pulse * 0.3, 0, Math.PI*2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.font = `bold ${Math.round(8*SCALE)}px 'Space Mono', monospace`;
+      ctx.fillStyle = DARK;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(c.label.split(' ')[0].substring(0,6), 0, 0);
+      ctx.restore();
+    });
+  }
+
+  function drawPlayer() {
+    ctx.save();
+    ctx.translate(player.x + player.w/2, player.y + player.h/2);
+    ctx.rotate(player.rotation);
+
+    ctx.shadowColor = VIOLET;
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = VIOLET;
+    ctx.beginPath();
+    ctx.roundRect(-player.w/2, -player.h/2, player.w, player.h, Math.round(4*SCALE));
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = OFFWHITE;
+    ctx.font = `bold ${Math.round(10*SCALE)}px 'Space Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('K', 0, 0);
+
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    particles.forEach(p => {
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawHUD() {
+    ctx.font = `${Math.round(11*SCALE)}px 'Space Mono', monospace`;
+    ctx.fillStyle = '#444';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`speed: ${speed.toFixed(1)}x`, Math.round(12*SCALE), Math.round(12*SCALE));
+  }
+
+  function draw() {
+    drawBackground();
+    drawPlatforms();
+    drawCollectibles();
+    drawParticles();
+    drawPlayer();
+    drawHUD();
+  }
+
+  function loop(ts) {
+    if (state !== 'playing') return;
+    const dt = Math.min(ts - lastTime, 50);
+    lastTime = ts;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function startGame() {
+    if (state === 'playing') return;
+    resize();
+    initGame();
+    state = 'playing';
+    overlay.style.display = 'none';
+    scoreDisplay.style.display = 'block';
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  function endGame() {
+    state = 'dead';
+    overlay.innerHTML = `
+      <p style="font-family:'Space Mono',monospace;font-size:clamp(10px,1.5vw,13px);color:#7C6EF8;letter-spacing:0.2em;text-transform:uppercase;">Game Over</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:clamp(32px,7vw,64px);font-weight:700;color:#F0EEE9;letter-spacing:-0.03em;">${score} pts</p>
+      <p style="font-family:'Space Mono',monospace;font-size:clamp(10px,1.5vw,12px);color:#555;letter-spacing:0.1em;">Tap or Space to retry</p>
+    `;
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.gap = '12px';
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (state === 'idle' || state === 'dead') startGame();
+      else jump();
+    }
+  });
+
+  canvas.addEventListener('click', () => {
+    if (state === 'idle' || state === 'dead') startGame();
+    else jump();
+  });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (state === 'idle' || state === 'dead') startGame();
+    else jump();
+  }, { passive: false });
+
+  window.addEventListener('resize', () => {
+    if (state === 'playing') {
+      resize();
+      platforms[0].w = W;
+    } else {
+      resize();
+    }
+  });
+
+  resize();
+  draw();
+})();
+</script>
+
+<!-- FOOTER -->
 <footer>
   <p>© 2026 Kliti — Full-Stack Developer</p>
   <div style="display:flex;gap:24px;">
