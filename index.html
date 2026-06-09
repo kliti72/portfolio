@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kliti — Full-Stack Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0A0A0A;
+    --offwhite: #F0EEE9;
+    --violet: #7C6EF8;
+    --violet-dim: #3D347A;
+    --gray: #888;
+    --gray-light: #1A1A1A;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--offwhite);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── CURSOR dot ── */
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--violet);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+    mix-blend-mode: screen;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: clamp(40px, 8vw, 120px);
+    position: relative;
+    border-bottom: 1px solid #222;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(11px, 1.2vw, 14px);
+    letter-spacing: 0.2em;
+    color: var(--violet);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .hero-name {
+    font-size: clamp(72px, 13vw, 200px);
+    font-weight: 700;
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    margin-bottom: 48px;
+  }
+
+  .hero-name span {
+    color: var(--violet);
+  }
+
+  .hero-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .hero-desc {
+    max-width: 480px;
+    font-size: clamp(16px, 1.8vw, 22px);
+    font-weight: 300;
+    color: #AAA;
+    line-height: 1.5;
+  }
+
+  .hero-desc strong {
+    color: var(--offwhite);
+    font-weight: 500;
+  }
+
+  .hero-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .hero-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--offwhite);
+    text-decoration: none;
+    border: 1px solid #333;
+    padding: 12px 24px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+
+  .hero-links a:hover {
+    border-color: var(--violet);
+    color: var(--violet);
+  }
+
+  .hero-links a.primary {
+    background: var(--violet);
+    border-color: var(--violet);
+    color: #fff;
+  }
+
+  .hero-links a.primary:hover {
+    background: transparent;
+    color: var(--violet);
+  }
+
+  /* ── SCROLL INDICATOR ── */
+  .scroll-hint {
+    position: absolute;
+    right: clamp(40px, 8vw, 120px);
+    top: clamp(40px, 8vw, 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #444;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+  }
+
+  .scroll-hint::before {
+    content: '';
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, #444);
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: clamp(60px, 8vw, 120px) clamp(40px, 8vw, 120px) 48px;
+    border-bottom: 1px solid #1A1A1A;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--violet);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: clamp(36px, 5vw, 72px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  /* ── PROJECTS GRID ── */
+  .projects-grid {
+    padding: 0 clamp(40px, 8vw, 120px) clamp(60px, 8vw, 120px);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: #111;
+  }
+
+  .project-card {
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    border: 1px solid transparent;
+    transition: border-color 0.3s;
+  }
+
+  .project-card:hover {
+    border-color: var(--violet-dim);
+  }
+
+  .project-card.large {
+    grid-column: span 2;
+  }
+
+  .project-img-wrap {
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .project-card.large .project-img-wrap {
+    aspect-ratio: 21/9;
+  }
+
+  .project-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.4s;
+    filter: grayscale(20%) brightness(0.85);
+  }
+
+  .project-card:hover .project-img-wrap img {
+    transform: scale(1.05);
+    filter: grayscale(0%) brightness(1);
+  }
+
+  .project-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.2) 60%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .project-content {
+    padding: 32px;
+  }
+
+  .project-roles {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .role-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--violet);
+    border: 1px solid var(--violet-dim);
+    padding: 4px 10px;
+  }
+
+  .project-title {
+    font-size: clamp(22px, 2.5vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: var(--offwhite);
+  }
+
+  .project-tools {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tool-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    background: #111;
+    padding: 4px 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .project-arrow {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray);
+    font-size: 18px;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+  }
+
+  .project-card:hover .project-arrow {
+    background: var(--violet);
+    border-color: var(--violet);
+    color: #fff;
+    transform: rotate(45deg);
+  }
+
+  /* ── STACK SECTION ── */
+  .stack-section {
+    padding: clamp(60px, 8vw, 120px);
+    border-top: 1px solid #1A1A1A;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 100px);
+    align-items: start;
+  }
+
+  .stack-left .big-label {
+    font-size: clamp(48px, 6vw, 96px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    margin-bottom: 32px;
+  }
+
+  .stack-left .big-label em {
+    font-style: normal;
+    color: var(--violet);
+  }
+
+  .stack-left p {
+    font-size: 17px;
+    color: #888;
+    max-width: 400px;
+    line-height: 1.7;
+  }
+
+  .stack-right {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stack-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid #1A1A1A;
+  }
+
+  .stack-row:first-child {
+    border-top: 1px solid #1A1A1A;
+  }
+
+  .stack-category {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--violet);
+    width: 100px;
+    flex-shrink: 0;
+  }
+
+  .stack-items {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .stack-item {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--offwhite);
+    background: #111;
+    padding: 6px 14px;
+    letter-spacing: 0.02em;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .stack-item:hover {
+    background: var(--violet);
+    color: #fff;
+  }
+
+  /* ── SERVICES SECTION ── */
+  .services-section {
+    border-top: 1px solid #1A1A1A;
+    padding: clamp(60px, 8vw, 120px);
+  }
+
+  .services-grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: #111;
+  }
+
+  .service-card {
+    background: var(--black);
+    padding: 40px 32px;
+    transition: background 0.2s;
+  }
+
+  .service-card:hover {
+    background: #0F0F0F;
+  }
+
+  .service-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--violet);
+    margin-bottom: 24px;
+  }
+
+  .service-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+
+  .service-desc {
+    font-size: 14px;
+    color: #777;
+    line-height: 1.7;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    border-top: 1px solid #1A1A1A;
+    padding: clamp(80px, 12vw, 180px) clamp(40px, 8vw, 120px);
+    text-align: center;
+  }
+
+  .cta-section h2 {
+    font-size: clamp(48px, 8vw, 120px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    margin-bottom: 48px;
+  }
+
+  .cta-section h2 span {
+    color: var(--violet);
+  }
+
+  .cta-email {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(14px, 1.8vw, 20px);
+    color: var(--offwhite);
+    text-decoration: none;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+    letter-spacing: 0.05em;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .cta-email:hover {
+    color: var(--violet);
+    border-color: var(--violet);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid #1A1A1A;
+    padding: 32px clamp(40px, 8vw, 120px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  footer a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  footer a:hover { color: var(--violet); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+      padding: 0 24px 60px;
+    }
+    .project-card.large {
+      grid-column: span 1;
+    }
+    .stack-section {
+      grid-template-columns: 1fr;
+      padding: 60px 24px;
+    }
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero { padding: 40px 24px; }
+    .section-header { padding: 60px 24px 32px; }
+    .services-section, .cta-section { padding: 60px 24px; }
+    footer { padding: 24px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="scroll-hint">scroll down</div>
+  <div class="hero-eyebrow">Full-Stack Developer · Italy · Available for projects</div>
+  <h1 class="hero-name">Kliti<span>.</span></h1>
+  <div class="hero-bottom">
+    <p class="hero-desc">
+      I build <strong>fast, custom web products</strong> — from e-commerce stores to auth systems to developer toolkits. <strong>No templates. No lock-in. Yours, fully.</strong>
+    </p>
+    <div class="hero-links">
+      <a href="https://github.com/kliti72" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://contra.com" target="_blank" rel="noopener">Contra</a>
+      <a href="#contact" class="primary">Let's work →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<div class="section-header">
+  <span class="section-label">Work</span>
+  <h2 class="section-title">Selected Projects</h2>
+</div>
+
+<div class="projects-grid">
+
+  <!-- HOKI — large -->
+  <a class="project-card large" href="https://hokiapp.it" target="_blank" rel="noopener">
+    <div class="project-img-wrap">
+      <img src="https://media.contra.com/image/upload/w_1000/fs9ffxlatnpwn7mzew47.webp" alt="Hoki platform" loading="lazy">
+      <div class="project-overlay"></div>
+    </div>
+    <div class="project-arrow">↗</div>
+    <div class="project-content">
+      <div class="project-roles">
+        <span class="role-tag">Full-Stack Developer</span>
+      </div>
+      <h3 class="project-title">Hoki — Skill & Time Exchange Platform</h3>
+      <div class="project-tools">
+        <span class="tool-tag">Next.js</span>
+        <span class="tool-tag">TypeScript</span>
+        <span class="tool-tag">Elysia</span>
+        <span class="tool-tag">Drizzle ORM</span>
+        <span class="tool-tag">Tailwind CSS</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- AUTH TEMPLATE -->
+  <a class="project-card" href="https://github.com/kliti72/auth-elysia-template" target="_blank" rel="noopener">
+    <div class="project-img-wrap">
+      <img src="https://media.contra.com/image/upload/w_1000/dvkoejsemo57bjoij7ax.webp" alt="Auth template" loading="lazy">
+      <div class="project-overlay"></div>
+    </div>
+    <div class="project-arrow">↗</div>
+    <div class="project-content">
+      <div class="project-roles">
+        <span class="role-tag">Full-Stack Developer</span>
+      </div>
+      <h3 class="project-title">Full-Stack Auth Template</h3>
+      <div class="project-tools">
+        <span class="tool-tag">Next.js</span>
+        <span class="tool-tag">TypeScript</span>
+        <span class="tool-tag">Elysia</span>
+        <span class="tool-tag">Drizzle ORM</span>
+        <span class="tool-tag">Tailwind CSS</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- HYTALE -->
+  <a class="project-card" href="https://github.com/kliti72/h-y-tale-server.top" target="_blank" rel="noopener">
+    <div class="project-img-wrap">
+      <img src="https://media.contra.com/image/upload/w_1000/f1ntwddcf4ntj2zoe4eu.webp" alt="Hytale server platform" loading="lazy">
+      <div class="project-overlay"></div>
+    </div>
+    <div class="project-arrow">↗</div>
+    <div class="project-content">
+      <div class="project-roles">
+        <span class="role-tag">Full-Stack Developer</span>
+      </div>
+      <h3 class="project-title">Hytale Server Platform</h3>
+      <div class="project-tools">
+        <span class="tool-tag">SolidJS</span>
+        <span class="tool-tag">TypeScript</span>
+        <span class="tool-tag">Elysia</span>
+        <span class="tool-tag">Drizzle ORM</span>
+        <span class="tool-tag">Tailwind CSS</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- ELYSIA TOOLKIT -->
+  <a class="project-card large" href="https://github.com/kliti72/elysia-template" target="_blank" rel="noopener">
+    <div class="project-img-wrap">
+      <img src="https://media.contra.com/image/upload/w_1000/royhnosnsizwv1gsjcnq.webp" alt="Elysia toolkit" loading="lazy">
+      <div class="project-overlay"></div>
+    </div>
+    <div class="project-arrow">↗</div>
+    <div class="project-content">
+      <div class="project-roles">
+        <span class="role-tag">Backend Developer</span>
+        <span class="role-tag">Developer Tools Engineer</span>
+      </div>
+      <h3 class="project-title">Elysia Developer Toolkit</h3>
+      <div class="project-tools">
+        <span class="tool-tag">Bun</span>
+        <span class="tool-tag">Elysia</span>
+        <span class="tool-tag">TypeScript</span>
+        <span class="tool-tag">Drizzle ORM</span>
+        <span class="tool-tag">SQLite</span>
+      </div>
+    </div>
+  </a>
+
+</div>
+
+<!-- STACK -->
+<section class="stack-section">
+  <div class="stack-left">
+    <div class="big-label">My<br><em>Stack</em></div>
+    <p>Opinionated tools, chosen for speed and reliability. I don't chase frameworks — I pick what ships fast and holds up in production.</p>
+  </div>
+  <div class="stack-right">
+    <div class="stack-row">
+      <span class="stack-category">Runtime</span>
+      <div class="stack-items">
+        <span class="stack-item">Bun</span>
+        <span class="stack-item">Node.js</span>
+      </div>
+    </div>
+    <div class="stack-row">
+      <span class="stack-category">Backend</span>
+      <div class="stack-items">
+        <span class="stack-item">Elysia</span>
+        <span class="stack-item">TypeScript</span>
+      </div>
+    </div>
+    <div class="stack-row">
+      <span class="stack-category">Frontend</span>
+      <div class="stack-items">
+        <span class="stack-item">Next.js</span>
+        <span class="stack-item">React</span>
+        <span class="stack-item">SolidJS</span>
+        <span class="stack-item">Tailwind CSS</span>
+      </div>
+    </div>
+    <div class="stack-row">
+      <span class="stack-category">Database</span>
+      <div class="stack-items">
+        <span class="stack-item">Drizzle ORM</span>
+        <span class="stack-item">SQLite</span>
+        <span class="stack-item">PostgreSQL</span>
+      </div>
+    </div>
+    <div class="stack-row">
+      <span class="stack-category">DevOps</span>
+      <div class="stack-items">
+        <span class="stack-item">nginx</span>
+        <span class="stack-item">systemd</span>
+        <span class="stack-item">GitHub Actions</span>
+        <span class="stack-item">VPS</span>
+      </div>
+    </div>
+    <div class="stack-row">
+      <span class="stack-category">Auth</span>
+      <div class="stack-items">
+        <span class="stack-item">JWT</span>
+        <span class="stack-item">Magic Link</span>
+        <span class="stack-item">OAuth</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services-section">
+  <div class="section-header" style="padding: 0 0 0 0; border: none;">
+    <span class="section-label">Services</span>
+    <h2 class="section-title">What I build</h2>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-number">01</div>
+      <h3 class="service-title">Custom E-commerce Stores</h3>
+      <p class="service-desc">No Shopify. No WooCommerce. A store you fully own — product pages, cart, Stripe checkout, admin panel. Live in days, not months.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-number">02</div>
+      <h3 class="service-title">Auth Systems</h3>
+      <p class="service-desc">Email/password, magic links, OAuth, JWT, user roles. A solid auth layer built into your stack — not bolted on with third-party black boxes.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-number">03</div>
+      <h3 class="service-title">CI/CD & VPS Deployment</h3>
+      <p class="service-desc">GitHub Actions pipeline, nginx reverse proxy, SSL, systemd services. Push to main → live in seconds. You focus on code, I handle the infra.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-number">04</div>
+      <h3 class="service-title">Web Scrapers & Automation</h3>
+      <p class="service-desc">Custom scrapers, data pipelines, automated workflows. If it's repetitive and it's on the web, it can be automated.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-number">05</div>
+      <h3 class="service-title">Dashboards & Data Viz</h3>
+      <p class="service-desc">Business dashboards, analytics panels, interactive charts. Real-time data, clean UI, no bloated BI tools required.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-number">06</div>
+      <h3 class="service-title">AI Integration</h3>
+      <p class="service-desc">Add AI features to your existing product — chatbots, semantic search, LLM-powered workflows. Practical AI, not hype.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <h2>Let's build<br>something<span>.</span></h2>
+  <a class="cta-email" href="mailto:hello@kliti.dev">hello@kliti.dev</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Kliti — Full-Stack Developer</p>
+  <div style="display:flex;gap:24px;">
+    <a href="https://github.com/kliti72" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://contra.com" target="_blank" rel="noopener">Contra</a>
+    <a href="https://hokiapp.it" target="_blank" rel="noopener">Hoki</a>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '24px';
+      cursor.style.height = '24px';
+      cursor.style.opacity = '0.5';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '10px';
+      cursor.style.height = '10px';
+      cursor.style.opacity = '1';
+    });
+  });
+</script>
+</body>
+</html>
